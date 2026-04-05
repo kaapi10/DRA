@@ -1,7 +1,4 @@
-const fetch = require('node-fetch');
-
 exports.handler = async (event) => {
-  // Only allow POST
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
@@ -13,9 +10,12 @@ exports.handler = async (event) => {
 
   let body;
   try {
-    body = JSON.parse(event.body);
-  } catch {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body' }) };
+    const raw = event.isBase64Encoded
+      ? Buffer.from(event.body, 'base64').toString('utf8')
+      : event.body;
+    body = JSON.parse(raw);
+  } catch (e) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body', detail: e.message }) };
   }
 
   const { system, messages, max_tokens } = body;
@@ -56,7 +56,6 @@ exports.handler = async (event) => {
     };
 
   } catch (err) {
-    console.error('Function error:', err);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Internal server error' }) };
+    return { statusCode: 500, body: JSON.stringify({ error: 'Internal server error', detail: err.message }) };
   }
 };
