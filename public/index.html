@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drishti · AI Eye Agent — Dr. Agarwals</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --dra-blue:   #0D51A4;
+  --dra-blue-d: #0A3D7A;
+  --dra-blue-m: #1A6BC4;
+  --dra-blue-l: #4A9FE0;
+  --dra-blue-p: #E8F1FB;
+  --dra-ghost:  #F4F8FD;
+  --amber:      #D97706;
+  --amber-l:    #FEF3C7;
+  --coral:      #E05540;
+  --coral-l:    #FFF0EE;
+  --green:      #16A34A;
+  --green-l:    #DCFCE7;
+  --purple:     #7C3AED;
+  --purple-l:   #EDE9FE;
+  --text:       #0D1F1F;
+  --text-2:     #3A5858;
+  --text-3:     #7A9898;
+  --border:     #C5D8F0;
+  --surface:    #FFFFFF;
+  --bg:         #F3F7FD;
+  --bg2:        #E4EEF8;
+  --shadow-s:   0 1px 8px rgba(11,110,110,0.08);
+  --shadow-m:   0 4px 20px rgba(11,110,110,0.12);
+  --shadow-l:   0 12px 48px rgba(11,110,110,0.16);
+  --r:          16px;
+  --r-sm:       10px;
+  --font-d:     'Playfair Display', serif;
+  --font-b:     'DM Sans', sans-serif;
+}
+
+body { font-family: var(--font-b); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+/* ══════ SHELL ══════ */
+.shell { display: grid; grid-template-columns: 260px 1fr; grid-template-rows: 64px 1fr; min-height: 100vh; }
+
+/* ══════ TOPBAR ══════ */
+.topbar {
+  grid-column: 1/-1;
+  background: var(--dra-blue-d);
+  display: flex; align-items: center; padding: 0 28px; gap: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-eye {
+  width: 36px; height: 22px; background: white; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0;
+}
+.topbar-iris {
+  width: 18px; height: 18px; background: var(--dra-blue-l); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  animation: irisFloat 5s ease-in-out infinite;
+}
+@keyframes irisFloat { 0%,100%{transform:translateX(0)} 40%{transform:translateX(4px)} 70%{transform:translateX(-3px)} }
+.topbar-pupil { width: 9px; height: 9px; background: var(--dra-blue-d); border-radius: 50%; }
+.topbar-brand { font-family: var(--font-d); font-size: 22px; color: white; font-weight: 700; letter-spacing: -0.5px; }
+.topbar-sub { font-size: 11px; color: rgba(255,255,255,0.45); letter-spacing: 1.8px; text-transform: uppercase; }
+.topbar-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.15); margin: 0 8px; }
+.topbar-client { font-size: 13px; color: rgba(255,255,255,0.6); font-weight: 400; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.topbar-badge {
+  background: rgba(61,189,189,0.2); border: 1px solid rgba(61,189,189,0.4);
+  color: var(--dra-blue-l); font-size: 11px; padding: 4px 12px; border-radius: 20px;
+  font-weight: 600; letter-spacing: 0.5px;
+}
+.topbar-dot { width: 8px; height: 8px; background: #22C55E; border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ══════ SIDEBAR ══════ */
+.sidebar {
+  background: var(--surface); border-right: 1px solid var(--border);
+  padding: 24px 0; display: flex; flex-direction: column; gap: 4px;
+  overflow-y: auto;
+}
+.sidebar-section-label {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-3); font-weight: 600; padding: 12px 20px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 20px; cursor: pointer; transition: all 0.18s;
+  border: none; background: transparent; width: 100%; text-align: left;
+  font-family: var(--font-b); border-left: 3px solid transparent;
+  position: relative;
+}
+.nav-item:hover { background: var(--dra-ghost); }
+.nav-item.active { background: var(--dra-blue-p); border-left-color: var(--dra-blue); }
+.nav-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0; transition: transform 0.2s;
+}
+.nav-item:hover .nav-icon, .nav-item.active .nav-icon { transform: scale(1.08); }
+.nav-item.active .nav-label { color: var(--dra-blue); font-weight: 600; }
+.nav-label { font-size: 13px; color: var(--text-2); font-weight: 500; }
+.nav-desc { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.nav-new {
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+  background: var(--coral); color: white; font-size: 9px; padding: 2px 7px;
+  border-radius: 10px; font-weight: 700; letter-spacing: 0.5px;
+}
+
+.sidebar-footer {
+  margin-top: auto; padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text-3); line-height: 1.6;
+}
+.sidebar-footer strong { color: var(--dra-blue); }
+
+/* ══════ CONTENT AREA ══════ */
+.content { overflow-y: auto; background: var(--bg); }
+.tab-panel { display: none; height: 100%; }
+.tab-panel.active { display: flex; flex-direction: column; height: 100%; }
+
+/* ══════ CHAT SHARED ══════ */
+.chat-wrap { display: flex; flex-direction: column; height: 100%; }
+.chat-header {
+  padding: 20px 28px 16px; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 14px; flex-shrink: 0;
+}
+.chat-hicon {
+  width: 44px; height: 44px; border-radius: 12px; font-size: 20px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.chat-htitle { font-family: var(--font-d); font-size: 18px; font-weight: 700; color: var(--text); }
+.chat-hdesc { font-size: 13px; color: var(--text-2); margin-top: 3px; line-height: 1.5; }
+.chat-hright { margin-left: auto; display: flex; gap: 8px; }
+.chip {
+  font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600;
+  border: 1px solid var(--border); color: var(--text-2); background: var(--bg);
+  cursor: default;
+}
+.chip.teal { background: var(--dra-blue-p); color: var(--dra-blue); border-color: var(--dra-blue-l); }
+
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 20px 28px;
+  display: flex; flex-direction: column; gap: 14px;
+  scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* messages */
+.msg-row { display: flex; gap: 10px; align-items: flex-end; }
+.msg-row.user { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
+}
+.msg-avatar.bot { background: var(--dra-blue); color: white; font-family: var(--font-d); }
+.msg-avatar.user { background: var(--bg2); color: var(--dra-blue); }
+.msg-bubble {
+  max-width: 72%; padding: 12px 16px; border-radius: 18px;
+  font-size: 14px; line-height: 1.65; position: relative;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.msg-bubble.shown { opacity: 1; transform: translateY(0); }
+.msg-row.bot .msg-bubble {
+  background: var(--surface); color: var(--text);
+  border-radius: 4px 18px 18px 18px;
+  box-shadow: var(--shadow-s); border: 1px solid var(--border);
+}
+.msg-row.user .msg-bubble {
+  background: var(--dra-blue); color: white;
+  border-radius: 18px 4px 18px 18px;
+}
+.msg-bubble strong { font-weight: 600; }
+.msg-bubble ul { margin: 6px 0 0 16px; }
+.msg-bubble li { margin-bottom: 3px; }
+.msg-time { font-size: 10px; opacity: 0.5; margin-top: 5px; }
+
+/* typing */
+.typing-row { display: flex; gap: 10px; align-items: flex-end; }
+.typing-bubble {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px 18px 18px 18px; padding: 14px 18px;
+  box-shadow: var(--shadow-s);
+}
+.typing-dots { display: flex; gap: 5px; align-items: center; }
+.dot { width: 7px; height: 7px; background: var(--dra-blue-l); border-radius: 50%; animation: typeDot 1.2s infinite; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typeDot { 0%,60%,100%{transform:scale(0.7);opacity:0.4} 30%{transform:scale(1);opacity:1} }
+
+/* quick replies */
+.quick-bar {
+  padding: 8px 28px 12px; display: flex; flex-wrap: wrap; gap: 8px; flex-shrink: 0;
+}
+.qr-btn {
+  background: var(--surface); border: 1px solid var(--border); color: var(--dra-blue);
+  padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: var(--font-b); transition: all 0.15s;
+}
+.qr-btn:hover { background: var(--dra-blue); color: white; border-color: var(--dra-blue); transform: translateY(-1px); }
+
+/* input bar */
+.chat-input-bar {
+  padding: 12px 28px 20px; background: var(--surface);
+  border-top: 1px solid var(--border); flex-shrink: 0;
+  display: flex; gap: 10px; align-items: flex-end;
+}
+.chat-input {
+  flex: 1; border: 1.5px solid var(--border); border-radius: 24px;
+  padding: 11px 18px; font-size: 14px; font-family: var(--font-b);
+  background: var(--bg); color: var(--text); outline: none; resize: none;
+  max-height: 120px; line-height: 1.5; transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: var(--dra-blue-l); background: white; }
+.chat-input::placeholder { color: var(--text-3); }
+.send-btn {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--dra-blue);
+  border: none; cursor: pointer; color: white; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.send-btn:hover { background: var(--dra-blue-m); transform: scale(1.05); }
+.send-btn:disabled { background: var(--border); cursor: not-allowed; transform: none; }
+.clear-btn {
+  height: 44px; padding: 0 16px; border-radius: 22px; background: transparent;
+  border: 1.5px solid var(--border); cursor: pointer; color: var(--text-3);
+  font-size: 12px; font-family: var(--font-b); font-weight: 500;
+  transition: all 0.15s; white-space: nowrap;
+}
+.clear-btn:hover { border-color: var(--coral); color: var(--coral); }
+
+/* ══════ TAB 1: TRIAGE ══════ */
+/* triage uses standard chat — no extra styles needed */
+
+/* ══════ TAB 2: VISION TEST ══════ */
+.vtest-layout { display: flex; flex-direction: column; height: 100%; }
+.vtest-header { padding: 20px 28px 16px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.vtest-body { flex: 1; overflow-y: auto; padding: 28px; }
+.test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 860px; }
+.test-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r);
+  overflow: hidden; cursor: pointer; transition: all 0.2s;
+}
+.test-card:hover { box-shadow: var(--shadow-m); border-color: var(--dra-blue-l); transform: translateY(-2px); }
+.test-card.running { border-color: var(--dra-blue); box-shadow: 0 0 0 3px var(--dra-blue-p); }
+.test-card-header {
+  padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.tc-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.tc-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.tc-sub { font-size: 12px; color: var(--text-3); }
+.test-card-body { padding: 20px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* snellen chart */
+.snellen { text-align: center; line-height: 1.3; }
+.snellen-row { font-weight: 700; color: var(--text); letter-spacing: 2px; display: block; cursor: default; }
+
+/* color blindness */
+.ishihara-plate {
+  width: 160px; height: 160px; border-radius: 50%; position: relative;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 30% 40%, #E8A87C 0%, #D4956A 20%, #B87A55 40%, #C4876A 60%, #D9967A 80%);
+  flex-shrink: 0;
+}
+.ishihara-num { font-size: 52px; font-weight: 900; color: #8B5E3C; opacity: 0.85; font-family: var(--font-d); position: relative; z-index: 1; }
+.ishihara-dots {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(200,130,80,0.6) 3px, transparent 3px),
+                    radial-gradient(circle, rgba(180,100,60,0.4) 2px, transparent 2px);
+  background-size: 12px 12px, 8px 8px;
+  background-position: 0 0, 6px 6px;
+}
+
+/* dry eye */
+.blink-zone {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.blink-eye-svg { width: 100px; height: 60px; }
+
+/* test result badge */
+.test-result {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  margin-top: 12px;
+}
+.test-result.pass { background: var(--green-l); color: var(--green); }
+.test-result.warn { background: var(--amber-l); color: var(--amber); }
+.test-result.fail { background: var(--coral-l); color: var(--coral); }
+
+/* progress bar */
+.progress-wrap { width: 100%; background: var(--bg2); border-radius: 10px; height: 8px; overflow: hidden; margin: 8px 0; }
+.progress-bar { height: 100%; border-radius: 10px; background: var(--dra-blue-l); transition: width 0.5s ease; }
+
+/* test cta */
+.test-btn {
+  margin-top: 12px; padding: 9px 20px; border-radius: 22px;
+  background: var(--dra-blue); color: white; border: none; cursor: pointer;
+  font-family: var(--font-b); font-size: 13px; font-weight: 600;
+  transition: all 0.2s;
+}
+.test-btn:hover { background: var(--dra-blue-m); transform: translateY(-1px); }
+.test-btn.secondary { background: transparent; color: var(--dra-blue); border: 1.5px solid var(--dra-blue); }
+
+/* ══════ TAB 3: LASIK CHECK ══════ */
+.lasik-layout { display: flex; flex-direction: column; height: 100%; }
+.lasik-progress-header {
+  padding: 20px 28px; background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.step-dots { display: flex; gap: 6px; margin-top: 12px; }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all 0.3s; }
+.step-dot.done { background: var(--dra-blue); }
+.step-dot.active { background: var(--dra-blue-l); transform: scale(1.4); }
+.lasik-body { flex: 1; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; align-items: center; }
+.lasik-card {
+  background: var(--surface); border-radius: var(--r); border: 1px solid var(--border);
+  padding: 32px; max-width: 540px; width: 100%; box-shadow: var(--shadow-s);
+}
+.lasik-q { font-family: var(--font-d); font-size: 22px; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+.lasik-sub { font-size: 13px; color: var(--text-2); margin-bottom: 24px; line-height: 1.6; }
+.lasik-options { display: flex; flex-direction: column; gap: 10px; }
+.lasik-opt {
+  padding: 14px 18px; border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  cursor: pointer; font-size: 14px; color: var(--text-2); transition: all 0.18s;
+  background: var(--bg); font-family: var(--font-b); text-align: left;
+}
+.lasik-opt:hover { border-color: var(--dra-blue); color: var(--dra-blue); background: var(--dra-ghost); }
+.lasik-opt.selected { border-color: var(--dra-blue); background: var(--dra-blue-p); color: var(--dra-blue); font-weight: 600; }
+.lasik-input {
+  width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  font-size: 14px; font-family: var(--font-b); outline: none; transition: border-color 0.2s;
+  background: var(--bg); color: var(--text);
+}
+.lasik-input:focus { border-color: var(--dra-blue-l); background: white; }
+.lasik-next {
+  margin-top: 20px; width: 100%; padding: 14px; border-radius: 12px;
+  background: var(--dra-blue); color: white; border: none; cursor: pointer;
+  font-size: 15px; font-weight: 600; font-family: var(--font-b); transition: all 0.2s;
+}
+.lasik-next:hover { background: var(--dra-blue-m); }
+.lasik-next:disabled { background: var(--border); cursor: not-allowed; color: var(--text-3); }
+
+/* result card */
+.result-banner {
+  max-width: 540px; width: 100%; border-radius: var(--r); padding: 32px; margin-top: 0;
+  text-align: center; box-shadow: var(--shadow-m);
+}
+.result-banner.eligible { background: linear-gradient(135deg, var(--dra-blue-d), var(--dra-blue-m)); color: white; }
+.result-banner.maybe { background: linear-gradient(135deg, #92400E, #D97706); color: white; }
+.result-banner.notyet { background: var(--surface); border: 1.5px solid var(--border); color: var(--text); }
+.result-icon { font-size: 48px; margin-bottom: 16px; }
+.result-title { font-family: var(--font-d); font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+.result-desc { font-size: 14px; opacity: 0.85; line-height: 1.7; margin-bottom: 24px; }
+.result-cta {
+  padding: 12px 28px; border-radius: 30px; border: 2px solid white; cursor: pointer;
+  font-size: 14px; font-weight: 600; font-family: var(--font-b);
+  background: rgba(255,255,255,0.15); color: white; transition: all 0.2s;
+}
+.result-cta:hover { background: white; color: var(--dra-blue-d); }
+.result-cta.dark { border-color: var(--dra-blue); color: var(--dra-blue); background: transparent; }
+.result-cta.dark:hover { background: var(--dra-blue); color: white; }
+
+/* ══════ TAB 4: EYE PHOTO ══════ */
+.photo-layout { display: flex; flex-direction: column; height: 100%; }
+.photo-body { flex: 1; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; gap: 24px; max-width: 700px; }
+.upload-zone {
+  border: 2px dashed var(--dra-blue-l); border-radius: var(--r); padding: 40px;
+  text-align: center; cursor: pointer; transition: all 0.2s; background: var(--dra-ghost);
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--dra-blue); background: var(--dra-blue-p); }
+.upload-icon { font-size: 40px; margin-bottom: 12px; }
+.upload-title { font-size: 16px; font-weight: 600; color: var(--dra-blue); margin-bottom: 6px; }
+.upload-sub { font-size: 13px; color: var(--text-3); }
+.upload-btn-row { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+.upload-btn {
+  padding: 10px 20px; border-radius: 22px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: var(--font-b); border: 1.5px solid var(--dra-blue);
+  color: var(--dra-blue); background: white; transition: all 0.2s;
+}
+.upload-btn:hover { background: var(--dra-blue); color: white; }
+.photo-preview { border-radius: var(--r); overflow: hidden; border: 1px solid var(--border); display: none; }
+.photo-preview img { width: 100%; display: block; }
+.disclaimer-box {
+  background: var(--amber-l); border: 1px solid #FCD34D; border-radius: var(--r-sm);
+  padding: 14px 18px; display: flex; gap: 10px; align-items: flex-start;
+}
+.disclaimer-box .icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+.disclaimer-box p { font-size: 12px; color: #92400E; line-height: 1.6; }
+
+/* ══════ TAB 5: BOOKING ══════ */
+.booking-layout { display: flex; flex-direction: column; height: 100%; }
+.booking-body { flex: 1; overflow-y: auto; padding: 28px; }
+.booking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 720px; }
+.branch-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r);
+  padding: 20px; cursor: pointer; transition: all 0.2s; position: relative;
+}
+.branch-card:hover { border-color: var(--dra-blue-l); box-shadow: var(--shadow-s); }
+.branch-card.selected { border-color: var(--dra-blue); background: var(--dra-blue-p); }
+.branch-card.selected::after {
+  content: '✓'; position: absolute; top: 12px; right: 12px;
+  width: 22px; height: 22px; background: var(--dra-blue); color: white;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.branch-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.branch-area { font-size: 12px; color: var(--text-3); margin-bottom: 10px; }
+.branch-services { display: flex; flex-wrap: wrap; gap: 6px; }
+.service-tag {
+  font-size: 11px; padding: 3px 9px; border-radius: 10px;
+  background: var(--bg2); color: var(--text-2); font-weight: 500;
+}
+.slot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+.slot-btn {
+  padding: 9px 6px; border-radius: 8px; border: 1.5px solid var(--border);
+  font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-b);
+  background: var(--surface); color: var(--text-2); transition: all 0.15s;
+}
+.slot-btn:hover { border-color: var(--dra-blue); color: var(--dra-blue); }
+.slot-btn.selected { background: var(--dra-blue); color: white; border-color: var(--dra-blue); }
+.slot-btn.full { opacity: 0.4; cursor: not-allowed; }
+.booking-form { max-width: 480px; margin-top: 24px; display: flex; flex-direction: column; gap: 14px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; letter-spacing: 0.3px; }
+.form-input {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  font-size: 14px; font-family: var(--font-b); outline: none; background: var(--bg); color: var(--text);
+  transition: border-color 0.2s;
+}
+.form-input:focus { border-color: var(--dra-blue-l); background: white; }
+.confirm-btn {
+  padding: 14px 32px; border-radius: 30px; background: var(--dra-blue); color: white;
+  border: none; cursor: pointer; font-size: 15px; font-weight: 600;
+  font-family: var(--font-b); transition: all 0.2s; margin-top: 8px;
+}
+.confirm-btn:hover { background: var(--dra-blue-m); transform: translateY(-2px); box-shadow: var(--shadow-m); }
+.booking-success {
+  background: linear-gradient(135deg, var(--dra-blue-d), var(--dra-blue-m));
+  border-radius: var(--r); padding: 36px; text-align: center;
+  color: white; max-width: 480px; display: none;
+}
+.booking-success.show { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.success-icon { font-size: 52px; margin-bottom: 16px; }
+.success-title { font-family: var(--font-d); font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+.success-detail { font-size: 14px; opacity: 0.85; line-height: 1.8; }
+
+/* section headers */
+.section-header { max-width: 860px; margin-bottom: 24px; }
+.section-header h2 { font-family: var(--font-d); font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.section-header p { font-size: 13px; color: var(--text-2); }
+
+/* responsive */
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .test-grid, .booking-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <img src="data:image/png;base64,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" alt="Dr. Agarwals" style="height:38px;width:auto;border-radius:6px;flex-shrink:0;">
+    <div class="topbar-divider"></div>
+    <div style="display:flex;flex-direction:column;justify-content:center;gap:1px;">
+      <div class="topbar-brand">Drishti</div>
+      <div class="topbar-sub" style="letter-spacing:1.2px;">AI Eye Agent</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-dot"></div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section-label">Patient Tools</div>
+
+    <button class="nav-item active" onclick="switchTab('triage', this)">
+      <div class="nav-icon" style="background:#E8F1FB">🩺</div>
+      <div>
+        <div class="nav-label">Symptom Triage</div>
+        <div class="nav-desc">AI-guided eye assessment</div>
+      </div>
+    </button>
+
+    <button class="nav-item" onclick="switchTab('vtest', this)">
+      <div class="nav-icon" style="background:#EDE9FE">👁️</div>
+      <div>
+        <div class="nav-label">Vision Tests</div>
+        <div class="nav-desc">Quick self-screening</div>
+      </div>
+    </button>
+
+    <button class="nav-item" onclick="switchTab('lasik', this)">
+      <div class="nav-icon" style="background:#FEF3C7">✨</div>
+      <div>
+        <div class="nav-label">LASIK Checker</div>
+        <div class="nav-desc">Am I a candidate?</div>
+      </div>
+      <span class="nav-new">NEW</span>
+    </button>
+
+    <button class="nav-item" onclick="switchTab('photo', this)">
+      <div class="nav-icon" style="background:#FEE2E2">📸</div>
+      <div>
+        <div class="nav-label">Eye Photo Screen</div>
+        <div class="nav-desc">AI preliminary flag</div>
+      </div>
+    </button>
+
+    <button class="nav-item" onclick="switchTab('booking', this)">
+      <div class="nav-icon" style="background:#DCFCE7">🗓️</div>
+      <div>
+        <div class="nav-label">Book Appointment</div>
+        <div class="nav-desc">All Chennai branches</div>
+      </div>
+    </button>
+
+    <div class="sidebar-footer">
+      <img src="data:image/png;base64,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" alt="Dr. Agarwals" style="height:28px;width:auto;border-radius:4px;margin-bottom:8px;display:block;"><strong>Drishti</strong> is an AI triage assistant.<br>
+      Not a substitute for clinical diagnosis.<br><br>
+      Emergency: <strong>044-4444-5555</strong>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ═══ TAB 1: TRIAGE ═══ -->
+    <div id="tab-triage" class="tab-panel active">
+      <div class="chat-wrap">
+        <div class="chat-header">
+          <div class="chat-hicon" style="background:#E8F1FB;font-size:22px">🩺</div>
+          <div>
+            <div class="chat-htitle">Symptom Triage</div>
+            <div class="chat-hdesc">Describe your eye concern — Drishti will ask guided questions and recommend the right care pathway.</div>
+          </div>
+          <div class="chat-hright">
+            <span class="chip teal">AI-powered</span>
+            <span class="chip">Chennai branches</span>
+          </div>
+        </div>
+        <div class="chat-messages" id="triage-msgs"></div>
+        <div class="quick-bar" id="triage-quick"></div>
+        <div class="chat-input-bar">
+          <textarea class="chat-input" id="triage-input" rows="1" placeholder="Describe your eye symptom... e.g. 'My vision is blurry at night'" onkeydown="handleKey(event,'triage')" oninput="autoResize(this)"></textarea>
+          <button class="clear-btn" onclick="clearChat('triage')">New chat</button>
+          <button class="send-btn" id="triage-send" onclick="sendMsg('triage')">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB 2: VISION TESTS ═══ -->
+    <div id="tab-vtest" class="tab-panel">
+      <div class="vtest-layout">
+        <div class="vtest-header chat-header">
+          <div class="chat-hicon" style="background:#EDE9FE;font-size:22px">👁️</div>
+          <div>
+            <div class="chat-htitle">Quick Vision Tests</div>
+            <div class="chat-hdesc">Simple self-screening tools. Not a clinical test — visit us for a full evaluation.</div>
+          </div>
+        </div>
+        <div class="vtest-body">
+          <div class="test-grid">
+
+            <!-- Snellen -->
+            <div class="test-card" id="card-snellen">
+              <div class="test-card-header">
+                <div class="tc-icon" style="background:#E8F1FB">🔤</div>
+                <div>
+                  <div class="tc-title">Distance Vision</div>
+                  <div class="tc-sub">Simplified Snellen test</div>
+                </div>
+              </div>
+              <div class="test-card-body" id="snellen-body">
+                <div style="text-align:center;color:var(--text-3);font-size:13px;margin-bottom:12px">Sit 60cm from screen. Read the smallest line you can clearly see.</div>
+                <div class="snellen" id="snellen-chart">
+                  <span class="snellen-row" style="font-size:38px">E</span>
+                  <span class="snellen-row" style="font-size:28px">F P</span>
+                  <span class="snellen-row" style="font-size:20px">T O Z</span>
+                  <span class="snellen-row" style="font-size:14px">L P E D</span>
+                  <span class="snellen-row" style="font-size:10px">P E C F D</span>
+                  <span class="snellen-row" style="font-size:8px">E D F C Z P</span>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;justify-content:center">
+                  <button class="test-btn secondary" onclick="snellenResult('6/6')">All 6 lines ✓</button>
+                  <button class="test-btn secondary" onclick="snellenResult('6/9')">4–5 lines</button>
+                  <button class="test-btn secondary" onclick="snellenResult('6/18')">2–3 lines</button>
+                  <button class="test-btn secondary" onclick="snellenResult('6/36')">Only top line</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Color Vision -->
+            <div class="test-card" id="card-color">
+              <div class="test-card-header">
+                <div class="tc-icon" style="background:#FEF3C7">🎨</div>
+                <div>
+                  <div class="tc-title">Colour Vision</div>
+                  <div class="tc-sub">Ishihara-style screening</div>
+                </div>
+              </div>
+              <div class="test-card-body" id="color-body">
+                <div style="text-align:center;color:var(--text-3);font-size:13px;margin-bottom:12px">What number do you see in this plate?</div>
+                <div id="ishihara-wrap" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+                  <div class="ishihara-plate">
+                    <div class="ishihara-dots"></div>
+                    <span class="ishihara-num" id="ishihara-num">74</span>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+                    <button class="test-btn secondary" onclick="colorAnswer('21')">21</button>
+                    <button class="test-btn secondary" onclick="colorAnswer('74')">74</button>
+                    <button class="test-btn secondary" onclick="colorAnswer('17')">17</button>
+                    <button class="test-btn secondary" onclick="colorAnswer("can't see")">Can't see</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dry Eye -->
+            <div class="test-card" id="card-dry">
+              <div class="test-card-header">
+                <div class="tc-icon" style="background:#DBEAFE">💧</div>
+                <div>
+                  <div class="tc-title">Dry Eye Check</div>
+                  <div class="tc-sub">OSDI-style quick score</div>
+                </div>
+              </div>
+              <div class="test-card-body" id="dry-body">
+                <div id="dry-questions">
+                  <div style="font-size:13px;color:var(--text-2);text-align:center;margin-bottom:14px" id="dry-q-text">In the past week, how often did your eyes feel dry or gritty?</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <button class="test-btn secondary" onclick="dryScore(0)">Never</button>
+                    <button class="test-btn secondary" onclick="dryScore(1)">Sometimes</button>
+                    <button class="test-btn secondary" onclick="dryScore(2)">Often</button>
+                    <button class="test-btn secondary" onclick="dryScore(3)">Always</button>
+                  </div>
+                  <div class="progress-wrap" style="margin-top:14px"><div class="progress-bar" id="dry-progress" style="width:0%"></div></div>
+                  <div style="font-size:11px;color:var(--text-3);text-align:center;margin-top:4px" id="dry-step-label">Question 1 of 5</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Amsler Grid -->
+            <div class="test-card" id="card-amsler">
+              <div class="test-card-header">
+                <div class="tc-icon" style="background:#DCFCE7">⊞</div>
+                <div>
+                  <div class="tc-title">Amsler Grid</div>
+                  <div class="tc-sub">Macular degeneration screen</div>
+                </div>
+              </div>
+              <div class="test-card-body" id="amsler-body">
+                <div style="text-align:center;color:var(--text-3);font-size:13px;margin-bottom:12px">Cover one eye. Focus on the centre dot. Do any lines appear wavy or missing?</div>
+                <svg width="140" height="140" viewBox="0 0 140 140" style="border:1px solid var(--border);border-radius:6px">
+                  <rect width="140" height="140" fill="white"/>
+                  <g stroke="#333" stroke-width="0.5" opacity="0.6">
+                    <line x1="14" y1="0" x2="14" y2="140"/><line x1="28" y1="0" x2="28" y2="140"/>
+                    <line x1="42" y1="0" x2="42" y2="140"/><line x1="56" y1="0" x2="56" y2="140"/>
+                    <line x1="70" y1="0" x2="70" y2="140"/><line x1="84" y1="0" x2="84" y2="140"/>
+                    <line x1="98" y1="0" x2="98" y2="140"/><line x1="112" y1="0" x2="112" y2="140"/>
+                    <line x1="126" y1="0" x2="126" y2="140"/>
+                    <line x1="0" y1="14" x2="140" y2="14"/><line x1="0" y1="28" x2="140" y2="28"/>
+                    <line x1="0" y1="42" x2="140" y2="42"/><line x1="0" y1="56" x2="140" y2="56"/>
+                    <line x1="0" y1="70" x2="140" y2="70"/><line x1="0" y1="84" x2="140" y2="84"/>
+                    <line x1="0" y1="98" x2="140" y2="98"/><line x1="0" y1="112" x2="140" y2="112"/>
+                    <line x1="0" y1="126" x2="140" y2="126"/>
+                  </g>
+                  <circle cx="70" cy="70" r="3" fill="#0D51A4"/>
+                </svg>
+                <div style="display:flex;gap:8px;margin-top:14px">
+                  <button class="test-btn secondary" onclick="amslerResult('normal')">Lines look straight ✓</button>
+                  <button class="test-btn secondary" onclick="amslerResult('distorted')">Lines look wavy</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB 3: LASIK CHECKER ═══ -->
+    <div id="tab-lasik" class="tab-panel">
+      <div class="lasik-layout">
+        <div class="lasik-progress-header">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="chat-hicon" style="background:#FEF3C7;font-size:22px;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center">✨</div>
+            <div>
+              <div class="chat-htitle" style="font-family:var(--font-d);font-size:18px;font-weight:700">LASIK Candidacy Checker</div>
+              <div class="chat-hdesc" style="font-size:13px;color:var(--text-2)">Answer 6 quick questions. Get an instant eligibility assessment.</div>
+            </div>
+          </div>
+          <div class="step-dots" id="lasik-dots"></div>
+        </div>
+        <div class="lasik-body" id="lasik-body">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB 4: EYE PHOTO ═══ -->
+    <div id="tab-photo" class="tab-panel">
+      <div class="photo-layout">
+        <div class="vtest-header chat-header">
+          <div class="chat-hicon" style="background:#FEE2E2;font-size:22px">📸</div>
+          <div>
+            <div class="chat-htitle">Eye Photo Screening</div>
+            <div class="chat-hdesc">Upload a clear photo of your eye. Drishti AI will flag any visible concerns for clinical review.</div>
+          </div>
+          <div class="chat-hright"><span class="chip teal">Human-reviewed</span></div>
+        </div>
+        <div class="photo-body">
+          <div class="disclaimer-box">
+            <div class="icon">⚠️</div>
+            <p><strong>Clinical disclaimer:</strong> This AI screening is preliminary and informational only. It does not constitute a medical diagnosis. All flagged concerns are reviewed by Dr. Agarwals clinical team before any recommendation is made.</p>
+          </div>
+          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('photo-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+            <div class="upload-icon">👁️</div>
+            <div class="upload-title">Upload Eye Photo</div>
+            <div class="upload-sub">Take a clear, well-lit close-up of your eye<br>JPG, PNG · max 10MB</div>
+            <div class="upload-btn-row">
+              <button class="upload-btn" onclick="event.stopPropagation();document.getElementById('photo-input').click()">📁 Choose file</button>
+            </div>
+          </div>
+          <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+          <div class="photo-preview" id="photo-preview">
+            <img id="preview-img" src="" alt="Eye photo preview">
+          </div>
+          <div class="chat-messages" id="photo-msgs" style="flex:none;min-height:80px;padding:0;background:transparent;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB 5: BOOKING ═══ -->
+    <div id="tab-booking" class="tab-panel">
+      <div class="booking-layout">
+        <div class="vtest-header chat-header">
+          <div class="chat-hicon" style="background:#DCFCE7;font-size:22px">🗓️</div>
+          <div>
+            <div class="chat-htitle">Book an Appointment</div>
+            <div class="chat-hdesc">Choose your nearest Dr. Agarwals branch, pick a slot, and confirm in seconds.</div>
+          </div>
+        </div>
+        <div class="booking-body">
+          <div id="booking-form-wrap">
+            <div class="section-header">
+              <h2>Select a branch</h2>
+              <p>All Chennai branches · Slots available this week</p>
+            </div>
+            <div class="booking-grid">
+              <div class="branch-card" onclick="selectBranch(this,'Anna Nagar')">
+                <div class="branch-name">Anna Nagar</div>
+                <div class="branch-area">📍 2nd Avenue, Anna Nagar West</div>
+                <div class="branch-services">
+                  <span class="service-tag">General OPD</span><span class="service-tag">Refraction</span><span class="service-tag">LASIK</span>
+                </div>
+              </div>
+              <div class="branch-card" onclick="selectBranch(this,'T. Nagar')">
+                <div class="branch-name">T. Nagar</div>
+                <div class="branch-area">📍 Usman Road, T. Nagar</div>
+                <div class="branch-services">
+                  <span class="service-tag">General OPD</span><span class="service-tag">Paediatric</span><span class="service-tag">Cataract</span>
+                </div>
+              </div>
+              <div class="branch-card" onclick="selectBranch(this,'Nungambakkam')">
+                <div class="branch-name">Nungambakkam</div>
+                <div class="branch-area">📍 Khader Nawaz Khan Rd</div>
+                <div class="branch-services">
+                  <span class="service-tag">LASIK Centre</span><span class="service-tag">Retina</span><span class="service-tag">Cornea</span>
+                </div>
+              </div>
+              <div class="branch-card" onclick="selectBranch(this,'Adyar')">
+                <div class="branch-name">Adyar</div>
+                <div class="branch-area">📍 LB Road, Adyar</div>
+                <div class="branch-services">
+                  <span class="service-tag">General OPD</span><span class="service-tag">Glaucoma</span><span class="service-tag">Dry Eye</span>
+                </div>
+              </div>
+              <div class="branch-card" onclick="selectBranch(this,'OMR')">
+                <div class="branch-name">OMR</div>
+                <div class="branch-area">📍 Perungudi, OMR</div>
+                <div class="branch-services">
+                  <span class="service-tag">General OPD</span><span class="service-tag">Refraction</span><span class="service-tag">Contact Lens</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="max-width:720px;margin-top:28px" id="slot-section" style="display:none">
+              <div class="section-header" style="margin-bottom:12px">
+                <h2>Pick a slot — Tomorrow</h2>
+              </div>
+              <div class="slot-grid">
+                <button class="slot-btn" onclick="selectSlot(this,'9:00 AM')">9:00 AM</button>
+                <button class="slot-btn" onclick="selectSlot(this,'9:30 AM')">9:30 AM</button>
+                <button class="slot-btn full" disabled>10:00 AM</button>
+                <button class="slot-btn" onclick="selectSlot(this,'10:30 AM')">10:30 AM</button>
+                <button class="slot-btn" onclick="selectSlot(this,'11:00 AM')">11:00 AM</button>
+                <button class="slot-btn full" disabled>11:30 AM</button>
+                <button class="slot-btn" onclick="selectSlot(this,'2:00 PM')">2:00 PM</button>
+                <button class="slot-btn" onclick="selectSlot(this,'2:30 PM')">2:30 PM</button>
+                <button class="slot-btn" onclick="selectSlot(this,'3:00 PM')">3:00 PM</button>
+                <button class="slot-btn full" disabled>3:30 PM</button>
+                <button class="slot-btn" onclick="selectSlot(this,'4:00 PM')">4:00 PM</button>
+                <button class="slot-btn" onclick="selectSlot(this,'4:30 PM')">4:30 PM</button>
+              </div>
+            </div>
+
+            <div class="booking-form" id="booking-form-fields" style="display:none">
+              <div class="section-header" style="margin-bottom:0">
+                <h2>Your details</h2>
+              </div>
+              <div>
+                <div class="form-label">Full Name</div>
+                <input class="form-input" id="b-name" placeholder="e.g. Priya Sharma" type="text">
+              </div>
+              <div>
+                <div class="form-label">Mobile Number</div>
+                <input class="form-input" id="b-phone" placeholder="+91 98765 43210" type="tel">
+              </div>
+              <div>
+                <div class="form-label">Reason for visit</div>
+                <input class="form-input" id="b-reason" placeholder="e.g. Blurry vision, LASIK enquiry, routine check..." type="text">
+              </div>
+              <button class="confirm-btn" onclick="confirmBooking()">Confirm Appointment →</button>
+            </div>
+          </div>
+
+          <div class="booking-success" id="booking-success">
+            <div class="success-icon">✅</div>
+            <div class="success-title">Appointment Confirmed!</div>
+            <div class="success-detail" id="booking-confirmation-detail"></div>
+            <button style="margin-top:20px;padding:10px 24px;border-radius:22px;background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.4);cursor:pointer;font-family:var(--font-b);font-size:13px;font-weight:600;" onclick="resetBooking()">Book another</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// CORE
+// ══════════════════════════════════════════
+const API_URL = '/api/chat';
+const MODEL = 'claude-sonnet-4-20250514';
+
+const SYSTEMS = {
+  triage: `You are Drishti, the AI eye care assistant for Dr. Agarwals Eye Hospital, Chennai — India's leading eye hospital chain.
+
+Your job: Triage eye symptoms, ask targeted follow-up questions, assess severity, and recommend the right care pathway.
+
+Routing logic:
+- Minor (dry eyes, screen fatigue, mild redness) → home care tips + optional routine booking
+- Refractive (blurry vision, difficulty reading) → comprehensive eye check + refraction test
+- LASIK interest → qualify candidate → free screening booking
+- Urgent (sudden vision loss, severe pain, chemical exposure, trauma, sudden redness with light sensitivity) → immediate visit + emergency number
+- Chronic (diabetes, glaucoma follow-up, cataract concern) → specialist consult booking
+
+Tone: Warm, concise, WhatsApp-style. Use bullet points and **bold** for key info. Use emojis contextually (👁️ ✅ ⚠️ 📍).
+Keep replies SHORT — max 5-6 lines. Ask ONE follow-up question at a time.
+For bookings: mention Dr. Agarwals [branch], offer a specific slot, confirm.
+Branches: Anna Nagar, T. Nagar, Nungambakkam (LASIK), Adyar, OMR.
+Emergency: 044-4444-5555.`,
+
+  photo: `You are Drishti, AI eye screening assistant for Dr. Agarwals Eye Hospital.
+
+The user has uploaded a photo of their eye for preliminary AI screening. Analyse what you observe.
+
+Rules:
+- Be specific about what you observe visually (redness, discharge, irregular pupil, clouding, etc.)
+- Always prefix with: "⚕️ AI Preliminary Screening (not a clinical diagnosis)"
+- If you see anything concerning, recommend urgent or routine clinical review clearly
+- Always end with: "📋 Our clinical team will review this within 24 hours."
+- Tone: Professional, reassuring, clear
+- Keep it under 8 lines`
+};
+
+const chatStates = { triage: [], photo: [] };
+
+function getTime() {
+  const d = new Date();
+  return d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+// ══════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+
+  if (id === 'triage' && chatStates.triage.length === 0) initTriage();
+  if (id === 'lasik' && !window.lasikInit) initLasik();
+}
+
+// ══════════════════════════════════════════
+// SHARED CHAT ENGINE
+// ══════════════════════════════════════════
+function appendMsg(chatId, role, text) {
+  const container = document.getElementById(chatId + '-msgs');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + role;
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar ' + role;
+  avatar.textContent = role === 'bot' ? 'D' : '👤';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = formatText(text) + '<div class="msg-time">' + getTime() + '</div>';
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  container.appendChild(row);
+  requestAnimationFrame(() => {
+    bubble.classList.add('shown');
+    container.scrollTop = container.scrollHeight;
+  });
+}
+
+function showTyping(chatId) {
+  const container = document.getElementById(chatId + '-msgs');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'typing-row';
+  row.id = chatId + '-typing';
+  const av = document.createElement('div');
+  av.className = 'msg-avatar bot'; av.textContent = 'D';
+  const bub = document.createElement('div');
+  bub.className = 'typing-bubble';
+  bub.innerHTML = '<div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  row.appendChild(av); row.appendChild(bub);
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping(chatId) {
+  const t = document.getElementById(chatId + '-typing');
+  if (t) t.remove();
+}
+
+function setLoading(chatId, on) {
+  const btn = document.getElementById(chatId + '-send');
+  const inp = document.getElementById(chatId + '-input');
+  if (btn) btn.disabled = on;
+  if (inp) inp.disabled = on;
+}
+
+function formatText(t) {
+  return t
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+async function callClaude(systemPrompt, messages, imageBase64, imageMime) {
+  let userMessages = messages;
+  if (imageBase64) {
+    const lastUser = userMessages[userMessages.length - 1];
+    userMessages = [
+      ...userMessages.slice(0, -1),
+      {
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: imageMime, data: imageBase64 } },
+          { type: 'text', text: lastUser.content }
+        ]
+      }
+    ];
+  }
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: MODEL, max_tokens: 1000, system: systemPrompt, messages: userMessages })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.content[0].text;
+}
+
+// ══════════════════════════════════════════
+// TRIAGE CHAT
+// ══════════════════════════════════════════
+function initTriage() {
+  const greet = 'Hi! 👋 I\'m **Drishti**, Dr. Agarwals\' AI eye assistant.\n\nTell me what\'s bothering your eyes — I\'ll ask a few questions and guide you to the right care.';
+  appendMsg('triage', 'bot', greet);
+  chatStates.triage = [];
+  setQuickReplies('triage', ['👁️ Blurry vision', '🔴 Red / painful eye', '💧 Dry eyes', '✨ LASIK enquiry', '👶 Child\'s eye issue', '📸 Upload eye photo']);
+}
+
+function setQuickReplies(chatId, options) {
+  const bar = document.getElementById(chatId + '-quick');
+  if (!bar) return;
+  bar.innerHTML = '';
+  options.forEach(o => {
+    const btn = document.createElement('button');
+    btn.className = 'qr-btn';
+    btn.textContent = o;
+    btn.onclick = () => {
+      bar.innerHTML = '';
+      sendMsgText(chatId, o);
+    };
+    bar.appendChild(btn);
+  });
+}
+
+async function sendMsg(chatId) {
+  const inp = document.getElementById(chatId + '-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  inp.style.height = 'auto';
+  await sendMsgText(chatId, text);
+}
+
+async function sendMsgText(chatId, text) {
+  document.getElementById(chatId + '-quick').innerHTML = '';
+  appendMsg(chatId, 'user', text);
+  chatStates[chatId].push({ role: 'user', content: text });
+  setLoading(chatId, true);
+  showTyping(chatId);
+  try {
+    const reply = await callClaude(SYSTEMS[chatId], chatStates[chatId]);
+    removeTyping(chatId);
+    appendMsg(chatId, 'bot', reply);
+    chatStates[chatId].push({ role: 'assistant', content: reply });
+
+    // smart quick replies based on reply content
+    const r = reply.toLowerCase();
+    const qrs = [];
+    if (r.includes('book') || r.includes('appointment')) qrs.push('📅 Book now');
+    if (r.includes('urgent') || r.includes('emergency')) qrs.push('📞 Call emergency');
+    if (r.includes('lasik')) qrs.push('✨ Check LASIK eligibility');
+    if (r.includes('home care') || r.includes('20-20-20')) qrs.push('💊 More home care tips');
+    if (qrs.length) setQuickReplies(chatId, qrs);
+  } catch (e) {
+    removeTyping(chatId);
+    appendMsg(chatId, 'bot', 'Sorry, having trouble connecting right now 🙏 Please try again in a moment.\n\nFor urgent concerns, call **044-4444-5555**.');
+  }
+  setLoading(chatId, false);
+}
+
+function clearChat(chatId) {
+  const container = document.getElementById(chatId + '-msgs');
+  if (container) container.innerHTML = '';
+  chatStates[chatId] = [];
+  document.getElementById(chatId + '-quick').innerHTML = '';
+  if (chatId === 'triage') initTriage();
+}
+
+function handleKey(e, chatId) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(chatId); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ══════════════════════════════════════════
+// VISION TESTS
+// ══════════════════════════════════════════
+function snellenResult(acuity) {
+  const body = document.getElementById('snellen-body');
+  let badge, msg;
+  if (acuity === '6/6') { badge = 'pass'; msg = '✅ 6/6 — Normal vision'; }
+  else if (acuity === '6/9') { badge = 'warn'; msg = '⚠️ 6/9 — Mild blurring. Consider an eye test.'; }
+  else if (acuity === '6/18') { badge = 'warn'; msg = '⚠️ 6/18 — Moderate blur. Eye test recommended.'; }
+  else { badge = 'fail'; msg = '🔴 6/36 — Significant blur. Please book an appointment.'; }
+  body.innerHTML = `
+    <div style="text-align:center">
+      <span class="test-result ${badge}">${msg}</span>
+      <br><br>
+      <button class="test-btn" onclick="location.href='#'; switchTab('booking', document.querySelectorAll('.nav-item')[4])">Book Eye Test →</button>
+      <button class="test-btn secondary" style="margin-left:8px" onclick="location.reload()">Redo</button>
+    </div>`;
+}
+
+function colorAnswer(ans) {
+  const body = document.getElementById('color-body');
+  const correct = ans === '74';
+  body.innerHTML = `
+    <div style="text-align:center">
+      <span class="test-result ${correct ? 'pass' : 'warn'}">
+        ${correct ? '✅ Correct (74) — Normal colour vision' : '⚠️ The number is 74 — possible colour vision variation'}
+      </span>
+      <p style="font-size:12px;color:var(--text-3);margin-top:10px">${correct ? 'Your colour vision appears normal for this plate.' : 'This may indicate colour vision deficiency. A full test is recommended.'}</p>
+      <button class="test-btn" style="margin-top:10px" onclick="switchTab('triage', document.querySelectorAll('.nav-item')[0])">Discuss with Drishti</button>
+    </div>`;
+}
+
+let dryStep = 0, dryTotal = 0;
+const dryQs = [
+  'In the past week, how often did your eyes feel dry or gritty?',
+  'How often did you experience blurred vision?',
+  'How often were your eyes sensitive to light?',
+  'How often did wind or air conditioning bother your eyes?',
+  'How often did your eyes feel tired?'
+];
+
+function dryScore(score) {
+  dryTotal += score;
+  dryStep++;
+  const pct = (dryStep / dryQs.length) * 100;
+  document.getElementById('dry-progress').style.width = pct + '%';
+
+  if (dryStep < dryQs.length) {
+    document.getElementById('dry-q-text').textContent = dryQs[dryStep];
+    document.getElementById('dry-step-label').textContent = `Question ${dryStep+1} of ${dryQs.length}`;
+  } else {
+    const norm = Math.round((dryTotal / (4 * dryQs.length)) * 100);
+    const body = document.getElementById('dry-body');
+    let badge, msg;
+    if (norm < 20) { badge = 'pass'; msg = `✅ Score ${norm}% — Minimal dry eye signs`; }
+    else if (norm < 50) { badge = 'warn'; msg = `⚠️ Score ${norm}% — Mild dry eye. Home care may help.`; }
+    else { badge = 'fail'; msg = `🔴 Score ${norm}% — Significant dry eye. Clinical review recommended.`; }
+    body.innerHTML = `
+      <div style="text-align:center">
+        <span class="test-result ${badge}">${msg}</span>
+        <br><br>
+        <button class="test-btn" onclick="switchTab('triage', document.querySelectorAll('.nav-item')[0])">Talk to Drishti →</button>
+        <button class="test-btn secondary" style="margin-left:8px" onclick="dryStep=0;dryTotal=0;location.reload()">Redo</button>
+      </div>`;
+    dryStep = 0; dryTotal = 0;
+  }
+}
+
+function amslerResult(r) {
+  const body = document.getElementById('amsler-body');
+  if (r === 'normal') {
+    body.innerHTML = `<span class="test-result pass">✅ Grid appears normal — low AMD risk signs</span><p style="font-size:12px;color:var(--text-3);margin-top:10px">Continue annual eye exams, especially after 40.</p>`;
+  } else {
+    body.innerHTML = `<span class="test-result fail">🔴 Wavy lines noted — please get a retinal check</span><p style="font-size:12px;color:var(--text-3);margin-top:10px">Distortion can indicate macular changes. Early detection is key.</p><br><button class="test-btn" onclick="switchTab('booking', document.querySelectorAll('.nav-item')[4])">Book Retina Check →</button>`;
+  }
+}
+
+// ══════════════════════════════════════════
+// LASIK CHECKER
+// ══════════════════════════════════════════
+const lasikQuestions = [
+  { q: 'How old are you?', sub: 'LASIK is recommended for ages 18–45.', type: 'options', opts: ['Under 18', '18–25', '26–35', '36–45', 'Over 45'] },
+  { q: 'What is your glasses power?', sub: 'LASIK can treat a wide range of prescriptions.', type: 'options', opts: ['-1 to -3 (mild)', '-3 to -6 (moderate)', '-6 to -10 (high)', '+1 to +4 (farsighted)', 'Cylindrical / astigmatism only'] },
+  { q: 'Has your power been stable for the last year?', sub: 'A stable prescription is an important eligibility criterion.', type: 'options', opts: ['Yes, no change in 1+ year', 'Slight change last year', 'Changed significantly', 'Not sure'] },
+  { q: 'Do you have any of these conditions?', sub: 'Some conditions may affect LASIK candidacy.', type: 'options', opts: ['None of the below', 'Severe dry eyes', 'Keratoconus / thin cornea', 'Autoimmune condition', 'Diabetes'] },
+  { q: 'Are you currently pregnant or nursing?', sub: 'Hormonal changes can temporarily affect vision and healing.', type: 'options', opts: ['No', 'Yes, currently pregnant', 'Yes, currently nursing'] },
+  { q: 'What is your primary motivation for LASIK?', sub: 'Helps us guide you to the right procedure.', type: 'options', opts: ['Convenience / sports / lifestyle', 'Occupation requirement', 'Cost saving on glasses long-term', 'Medical advice', 'Curious / exploring'] }
+];
+let lasikAnswers = [];
+let lasikCurrent = 0;
+
+function initLasik() {
+  window.lasikInit = true;
+  lasikAnswers = [];
+  lasikCurrent = 0;
+  renderLasikDots();
+  renderLasikStep();
+}
+
+function renderLasikDots() {
+  const d = document.getElementById('lasik-dots');
+  d.innerHTML = '';
+  lasikQuestions.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i < lasikCurrent ? ' done' : i === lasikCurrent ? ' active' : '');
+    d.appendChild(dot);
+  });
+}
+
+function renderLasikStep() {
+  const body = document.getElementById('lasik-body');
+  if (lasikCurrent >= lasikQuestions.length) { renderLasikResult(); return; }
+  const q = lasikQuestions[lasikCurrent];
+  body.innerHTML = `
+    <div class="lasik-card">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dra-blue);font-weight:600;margin-bottom:8px">Question ${lasikCurrent+1} of ${lasikQuestions.length}</div>
+      <div class="lasik-q">${q.q}</div>
+      <div class="lasik-sub">${q.sub}</div>
+      <div class="lasik-options">
+        ${q.opts.map(o => `<button class="lasik-opt" onclick="lasikAnswer('${o}', this)">${o}</button>`).join('')}
+      </div>
+      <button class="lasik-next" id="lasik-next-btn" disabled onclick="nextLasik()">Next →</button>
+    </div>`;
+}
+
+function lasikAnswer(val, btn) {
+  document.querySelectorAll('.lasik-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  lasikAnswers[lasikCurrent] = val;
+  document.getElementById('lasik-next-btn').disabled = false;
+}
+
+function nextLasik() {
+  if (!lasikAnswers[lasikCurrent]) return;
+  lasikCurrent++;
+  renderLasikDots();
+  renderLasikStep();
+}
+
+function renderLasikResult() {
+  const body = document.getElementById('lasik-body');
+  const a = lasikAnswers;
+  let eligible = true, flags = [];
+
+  if (a[0] === 'Under 18' || a[0] === 'Over 45') { eligible = false; flags.push('Age outside ideal range (18–45)'); }
+  if (a[2] === 'Changed significantly') { eligible = false; flags.push('Power not yet stable'); }
+  if (a[3] === 'Keratoconus / thin cornea') { eligible = false; flags.push('Corneal condition may contraindicate LASIK'); }
+  if (a[4] !== 'No') { eligible = false; flags.push('Pregnancy/nursing — postpone until after'); }
+  if (a[3] === 'Severe dry eyes') flags.push('Dry eyes need pre-treatment before LASIK');
+
+  const isMaybe = !eligible && flags.length <= 1;
+
+  body.innerHTML = eligible ? `
+    <div class="result-banner eligible">
+      <div class="result-icon">🎯</div>
+      <div class="result-title">Excellent Candidate!</div>
+      <div class="result-desc">Based on your answers, you appear to be a strong LASIK candidate. The next step is a free pre-LASIK screening — corneal thickness, dry eye assessment, and refraction check.</div>
+      <button class="result-cta" onclick="switchTab('booking', document.querySelectorAll('.nav-item')[4])">Book Free Screening →</button>
+    </div>
+  ` : isMaybe ? `
+    <div class="result-banner maybe">
+      <div class="result-icon">⚡</div>
+      <div class="result-title">Possible — Needs Assessment</div>
+      <div class="result-desc">You may still be a candidate, but one factor needs clinical review: <strong>${flags[0]}</strong>. Our LASIK specialist can advise after a screening.</div>
+      <button class="result-cta" onclick="switchTab('booking', document.querySelectorAll('.nav-item')[4])">Book Screening →</button>
+    </div>
+  ` : `
+    <div class="result-banner notyet">
+      <div class="result-icon">🔍</div>
+      <div class="result-title">Not Ready Yet</div>
+      <div class="result-desc" style="color:var(--text-2)">A few factors suggest LASIK isn't the right fit right now:<br><br>${flags.map(f=>'• '+f).join('<br>')}<br><br>This may be temporary — our team can discuss alternatives like ICL or phakic IOL.</div>
+      <button class="result-cta dark" onclick="switchTab('triage', document.querySelectorAll('.nav-item')[0])">Talk to Drishti →</button>
+    </div>
+  `;
+
+  body.innerHTML += `<button style="margin-top:16px;padding:8px 20px;border-radius:20px;background:transparent;border:1.5px solid var(--border);color:var(--text-3);cursor:pointer;font-family:var(--font-b);font-size:13px;" onclick="window.lasikInit=false;initLasik()">Retake checker</button>`;
+}
+
+// ══════════════════════════════════════════
+// EYE PHOTO
+// ══════════════════════════════════════════
+function dragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('dragover'); }
+function dragLeave(e) { document.getElementById('upload-zone').classList.remove('dragover'); }
+function dropFile(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) processPhotoFile(file);
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (file) processPhotoFile(file);
+}
+
+function processPhotoFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64Full = e.target.result;
+    const base64 = base64Full.split(',')[1];
+    const mime = file.type;
+    const preview = document.getElementById('photo-preview');
+    const img = document.getElementById('preview-img');
+    img.src = base64Full;
+    preview.style.display = 'block';
+    analysePhoto(base64, mime);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analysePhoto(base64, mime) {
+  const msgs = document.getElementById('photo-msgs');
+  msgs.innerHTML = '';
+  showTyping('photo');
+  try {
+    const reply = await callClaude(SYSTEMS.photo, [{ role: 'user', content: 'Please analyse this eye photo and provide a preliminary screening report.' }], base64, mime);
+    removeTyping('photo');
+    appendMsg('photo', 'bot', reply);
+  } catch(e) {
+    removeTyping('photo');
+    appendMsg('photo', 'bot', '⚕️ Unable to analyse the photo right now. Please try again or call **044-4444-5555** for assistance.');
+  }
+}
+
+// ══════════════════════════════════════════
+// BOOKING
+// ══════════════════════════════════════════
+let selectedBranch = '', selectedSlot = '';
+
+function selectBranch(card, branch) {
+  document.querySelectorAll('.branch-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedBranch = branch;
+  document.getElementById('slot-section').style.display = 'block';
+  document.getElementById('slot-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function selectSlot(btn, slot) {
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSlot = slot;
+  document.getElementById('booking-form-fields').style.display = 'flex';
+  document.getElementById('booking-form-fields').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function confirmBooking() {
+  const name = document.getElementById('b-name').value.trim();
+  const phone = document.getElementById('b-phone').value.trim();
+  const reason = document.getElementById('b-reason').value.trim();
+  if (!name || !phone || !selectedBranch || !selectedSlot) {
+    alert('Please fill in all details and select a branch + slot.');
+    return;
+  }
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateStr = tomorrow.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  document.getElementById('booking-form-wrap').style.display = 'none';
+  const success = document.getElementById('booking-success');
+  document.getElementById('booking-confirmation-detail').innerHTML =
+    `📍 Dr. Agarwals, ${selectedBranch}<br>🗓️ ${dateStr} · ${selectedSlot}<br>👤 ${name}<br>📱 ${phone}<br>${reason ? '📝 ' + reason + '<br>' : ''}<br>An SMS confirmation will be sent to your number.`;
+  success.classList.add('show');
+}
+
+function resetBooking() {
+  selectedBranch = ''; selectedSlot = '';
+  document.getElementById('booking-form-wrap').style.display = 'block';
+  document.querySelectorAll('.branch-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('slot-section').style.display = 'none';
+  document.getElementById('booking-form-fields').style.display = 'none';
+  document.getElementById('booking-success').classList.remove('show');
+  document.getElementById('b-name').value = '';
+  document.getElementById('b-phone').value = '';
+  document.getElementById('b-reason').value = '';
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initTriage();
+  initLasik();
+});
+</script>
+</body>
+</html>
