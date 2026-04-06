@@ -980,13 +980,24 @@ async function callClaude(systemPrompt, messages, imageBase64, imageMime) {
       }
     ];
   }
+  const payload = {
+    system: systemPrompt || '',
+    messages: userMessages,
+    max_tokens: 1000
+  };
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: MODEL, max_tokens: 1000, system: systemPrompt, messages: userMessages })
+    body: JSON.stringify(payload)
   });
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error('API error:', res.status, errText);
+    throw new Error('API error ' + res.status);
+  }
   const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+  if (data.error) throw new Error(data.error.message || data.error);
+  if (!data.content || !data.content[0]) throw new Error('Empty response');
   return data.content[0].text;
 }
 
